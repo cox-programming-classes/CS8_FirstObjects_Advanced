@@ -35,7 +35,7 @@ public readonly record struct AngleMeasure(double Theta = 0, AngularUnit Unit = 
     /// </summary>
     /// <returns></returns>
     public override string ToString() => 
-        $"{Theta}{Unit.Symbol()}";
+        $"{Theta:0.00}{Unit.Symbol()}";
 
     /// <summary>
     /// Add two angles together...
@@ -93,5 +93,19 @@ public static class AngleMeasureExtensions
             AngularUnit.Radians => " Rad",
             AngularUnit.Degrees => "\u00b0",
             _ => ""
+        };
+
+    /// <summary>
+    /// Swap Radians for Degrees and vice versa.
+    /// all invalid units become Radians.
+    /// </summary>
+    /// <param name="unit"></param>
+    /// <returns></returns>
+    public static AngularUnit Swap(this AngularUnit unit) =>
+        unit switch
+        {
+            AngularUnit.Radians => AngularUnit.Degrees,
+            AngularUnit.Degrees => AngularUnit.Radians,
+            _ => AngularUnit.Radians
         };
 }

@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Text;
 
 namespace CS8_FirstObjects.Models;
 
@@ -116,6 +117,13 @@ public class Vector2D
     #region Other Mathematical Calculations
 
     /// <summary>
+    /// Get a Unit Vector in the same direction as this vector.
+    /// </summary>
+    /// <returns>A vector with Magnitude = 1 in the same direction as this vector.</returns>
+    /// <exception cref="NotImplementedException">TODO: Implement!</exception>
+    public Vector2D UnitVector() => throw new NotImplementedException("You need to implement this function.");
+    
+    /// <summary>
     /// Rotate this vector by a given angle!
     /// </summary>
     /// <param name="angle"></param>
@@ -137,5 +145,104 @@ public class Vector2D
     {
         throw new NotImplementedException();
     }
+    #endregion
+    
+    #region ToString Operations
+    /// <summary>
+    /// Default way to represent a Vector2D as a pair of coordinates.
+    /// </summary>
+    /// <returns></returns>
+    public override string ToString() => $"({X}, {Y})";
+
+    /// <summary>
+    /// Custom String Format for Vector2D!
+    /// allows the embedding of number formatting
+    ///
+    /// e.g.
+    ///
+    /// `v.ToString("[{X:0.00}, {Y:0.00}])`
+    /// will print the vector in [...] and rounded
+    /// to two decimal places.
+    /// 
+    /// `v.ToString("(R, T)")` will print Polar coordinates.
+    /// 
+    /// `v.ToString("(X, Y) => (R, {T:R})")` prints
+    /// Both rectangular and polar, with the angle
+    /// specifically in Radians.
+    /// </summary>
+    /// <param name="format"></param>
+    /// <returns></returns>
+    public string ToString(string? format)
+    {
+        format = format?.ToUpper();
+        if(string.IsNullOrWhiteSpace(format) || format == "G") return ToString();
+
+        
+        StringBuilder output = new();
+
+        for (var i = 0; i < format.Length; i++)
+        {
+            var c = format[i];
+            if (c != 'X' && c != 'Y' && c != 'R' && c != 'T' && c != '{')
+            {   // Exit Early whenever possible!
+                output.Append(c);
+                continue;
+            }
+
+            if (c == '{')
+            {
+                var j = i + 1;
+                for (; j < format.Length && format[j] != '}'; j++) ; // find the next space.
+
+                if (j == format.Length || format[j] != '}')
+                {   // formatting error...
+                    output.Append(c);
+                    continue;
+                }
+                
+                var substring = format[(i + 1)..j];
+                var v = substring[0];
+                if (substring.Length < 3 || 
+                    (v != 'X' && v != 'Y' && v != 'R' && v != 'T') ||
+                    substring[1] != ':')
+                {   // formatting error...
+                    output.Append(c);
+                    continue;
+                }
+                
+                var subformat = substring[2..];
+                var formatted = v switch
+                {
+                    'X' => $"{X.ToString(subformat)}",
+                    'Y' => $"{Y.ToString(subformat)}",
+                    'R' => $"{Magnitude.ToString(subformat)}",
+                    'T' => subformat switch
+                    {
+                        "D" => $"{Angle.ToUnit(AngularUnit.Degrees)}",
+                        "R" => $"{Angle.ToUnit(AngularUnit.Radians)}",
+                        _ => $"{Angle}:{subformat}"  // invalid format.
+                    },
+                    _ => ""
+                };
+                output.Append(formatted);
+                i = j;
+                continue;
+            }
+            
+            var value = 
+                c switch  // grab the value of either X or Y.
+                {
+                    'X' => $"{X}",
+                    'Y' => $"{Y}",
+                    'R' => $"{Magnitude}",
+                    'T' => $"{Angle}",
+                    _ => ""
+                };
+            output.Append(value);
+        }
+        
+        return output.ToString();
+    }
+    
     #endregion
 }
